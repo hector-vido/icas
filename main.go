@@ -14,6 +14,7 @@ func main() {
 	http.HandleFunc("/", authMiddleware(homeHandler))
 	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/animal/", authMiddleware(animalHandler))
+	http.HandleFunc("/gps/", authMiddleware(gpsHandler))
 	fmt.Println("Server listening on port 8080...")
 
 	fs := http.FileServer(http.Dir("static/"))
@@ -46,6 +47,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 
 func animalHandler(w http.ResponseWriter, r *http.Request) {
 	animal := strings.TrimPrefix(r.URL.Path, "/animal/")
+	animal = strings.TrimSuffix(animal, "/")
 	db, err := sql.Open("sqlite", "file:icas.db")
 	if err != nil {
 		fmt.Print(err)
@@ -85,4 +87,38 @@ func animalHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 	}
 	fmt.Fprint(w, string(animalJson))
+}
+
+func gpsHandler(w http.ResponseWriter, r *http.Request) {
+	animal := strings.TrimPrefix(r.URL.Path, "/gps/")
+	animal = strings.TrimSuffix(animal, "/")
+	var coordinate Coordinate
+	defer r.Body.Close()
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&coordinate); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	db, err := sql.Open("sqlite", "file:icas.db")
+	if err != nil {
+		fmt.Print(err)
+	}
+	defer db.Close()
+
+	var a Animal
+	err = db.QueryRow("SELECT id FROM animals WHERE name = ?", animal).Scan(&a.ID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			http.Error(w, "Animal não encontrado", http.StatusNotFound)
+			return
+		}
+		http.Error(w, "Internal Error", http.StatusInternalServerError)
+		return
+	}
+
+	_, err = db.Exec("INSERT INTO animals_coordinates (animal_id, latitude, longitude) VALUES (?, ?, ?)", a.ID, coordinate.Lat, coordinate.Lng)
+	if err != nil {
+		fmt.Print(err)
+		http.Error(w, "Internal Error", http.StatusInternalServerError)
+	}
 }

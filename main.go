@@ -10,7 +10,7 @@ import (
 
 func main() {
 	http.HandleFunc("/", homeHandler)
-	http.HandleFunc("/login", homeHandler)
+	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/animal/", animalHandler)
 	fmt.Println("Server listening on port 8080...")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
@@ -42,12 +42,6 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	t.Execute(w, p)
-}
-
-func loginHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		fmt.Printf("")
-	}
 }
 
 func animalHandler(w http.ResponseWriter, r *http.Request) {

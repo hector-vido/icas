@@ -18,15 +18,15 @@ import (
 
 type contextKey string
 
-const userContextKey contextKey = "userName"
+const sessionContextKey contextKey = "sessionKey"
 
 type sessionStore struct {
 	mu       sync.RWMutex
-	sessions map[string]string // sessionID -> email
+	sessions map[string]User // sessionID -> email
 }
 
 var store = &sessionStore{
-	sessions: make(map[string]string),
+	sessions: make(map[string]User),
 }
 
 func generateSessionID() (string, error) {
@@ -69,7 +69,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		defer db.Close()
 
-		rows, err := db.Query("SELECT id, name, password FROM users WHERE email = ?", requestUser.Email)
+		rows, err := db.Query("SELECT id, name, email, password, role FROM users WHERE email = ?", requestUser.Email)
 		if err != nil {
 			fmt.Print(err)
 		}
@@ -78,7 +78,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		found := false
 		var u User
 		for rows.Next() {
-			if err := rows.Scan(&u.ID, &u.Name, &u.Password); err != nil {
+			if err := rows.Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.Role); err != nil {
 				fmt.Print(err)
 			}
 			if verifyPassword(requestUser.Password, u.Password) {
@@ -95,7 +95,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			store.mu.Lock()
-			store.sessions[sessionID] = u.Name
+			store.sessions[sessionID] = User{
+				u.ID,
+				u.Name,
+				u.Email,
+				"",
+				u.Role,
+			}
 			store.mu.Unlock()
 			http.SetCookie(w, &http.Cookie{
 				Name:     "session_id",
@@ -135,13 +141,13 @@ func getActiveSession(r *http.Request) (context.Context, error) {
 		return nil, errors.New("no session cookie")
 	}
 	store.mu.RLock()
-	name, exists := store.sessions[cookie.Value]
+	sid, exists := store.sessions[cookie.Value]
 	store.mu.RUnlock()
 
 	if !exists {
 		return nil, errors.New("invalid session")
 	}
 
-	ctx := context.WithValue(r.Context(), userContextKey, name)
+	ctx := context.WithValue(r.Context(), sessionContextKey, sid)
 	return ctx, nil
 }

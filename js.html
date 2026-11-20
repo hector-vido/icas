@@ -1,0 +1,47 @@
+<!-- 1. Importar CSS e JS do Leaflet no <head> -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- 2. Definir o contêiner do mapa -->
+<div id="map" style="width: 100%; height: 600px;"></div>
+
+<script>
+// 3. Inicializar o mapa
+const map = L.map('map').setView([-23.56380, -46.73389], 15);
+
+// 4. Adicionar camada de blocos do OpenStreetMap
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+// 5. Definir suas coordenadas (observe a ordem do Leaflet!)
+const locations = [
+  { lat: -23.56380, lng: -46.73389 },
+  { lat: -23.56380, lng: -46.73291 },
+  { lat: -23.56379, lng: -46.73193 },
+  { lat: -23.56379, lng: -46.73095 },
+  { lat: -23.56378, lng: -46.72997 },
+  { lat: -23.56378, lng: -46.72899 },
+  { lat: -23.56377, lng: -46.72801 },
+  { lat: -23.56377, lng: -46.72703 },
+  { lat: -23.56376, lng: -46.72605 },
+  { lat: -23.56376, lng: -46.72507 },
+  { lat: -23.56375, lng: -46.72409 },
+  { lat: -23.56375, lng: -46.72311 },
+  { lat: -23.56374, lng: -46.72213 },
+  { lat: -23.56374, lng: -46.72115 },
+  { lat: -23.56373, lng: -46.72017 },
+  { lat: -23.56373, lng: -46.71919 },
+  { lat: -23.56372, lng: -46.71821 },
+  { lat: -23.56372, lng: -46.71723 },
+  { lat: -23.56371, lng: -46.71625 },
+  { lat: -23.56371, lng: -46.71527 },
+];
+
+// 6. Percorrer e adicionar marcadores
+locations.forEach((loc, index) => {
+  // O Leaflet usa [latitude, longitude], a ordem é oposta à do Google!
+  const marker = L.marker([loc.lat, loc.lng]).addTo(map);
+  marker.bindPopup(`Ponto ${index + 1}<br>(${loc.lat}, ${loc.lng})`);
+});
+</script>

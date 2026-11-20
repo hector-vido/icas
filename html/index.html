@@ -1,77 +1,156 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>ICAS - {{ .title }}</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler.min.css" />
-  </head>
-  <body>
-    <div class="page">
-      <div class="page-wrapper">
-        <div class="page-header d-print-none">
-          <div class="container-xl">
-            <div class="row g-2 align-items-center">
-              <div class="col">
-                <div class="page-pretitle">Starter</div>
-                <h2 class="page-title">Hello, Tabler!</h2>
-              </div>
-              <div class="col-auto ms-auto d-print-none">
-                <a href="https://docs.tabler.io" class="btn btn-primary" target="_blank" rel="noopener">Documentation</a>
-              </div>
-            </div>
-          </div>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler.min.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<header class="navbar navbar-expand-md d-print-none">
+    <div class="container-xl">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu"
+                aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <!-- BEGIN NAVBAR LOGO -->
+        <a href="." aria-label="ICAS" class="navbar-brand navbar-brand-autodark me-3">
+            <b>ICAS</b>
+        </a>
+        <!-- END NAVBAR LOGO -->
+        <div class="collapse navbar-collapse" id="navbar-menu">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">
+            <span class="nav-link-icon">
+              <!-- Download SVG icon from http://tabler.io/icons/icon/home -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                   aria-hidden="true" focusable="false" class="icon">
+                <path d="M5 12l-2 0l9 -9l9 9l-2 0"/>
+                <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"/>
+                <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"/>
+              </svg>
+            </span>
+                        <span class="nav-link-title">Início</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+            <span class="nav-link-icon">
+              <!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                   aria-hidden="true" focusable="false" class="icon">
+                <path d="M9 11l3 3l8 -8"/>
+                <path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9"/>
+              </svg>
+            </span>
+                        <span class="nav-link-title">Inventário</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+            <span class="nav-link-icon">
+              <!-- Download SVG icon from http://tabler.io/icons/icon/checkbox -->
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                   aria-hidden="true" focusable="false" class="icon">
+                <path d="M9 11l3 3l8 -8"/>
+                <path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9"/>
+              </svg>
+            </span>
+                        <span class="nav-link-title">Configurações</span>
+                    </a>
+                </li>
+            </ul>
         </div>
-        <div class="page-body">
-          <div class="container-xl">
-            <div class="row row-cards">
-              <div class="col-md-6">
-                <div class="card">
-                  <div class="card-body">
-                    <h3 class="card-title">Buttons</h3>
-                    <div class="btn-list">
-                      <button type="button" class="btn btn-primary">Primary</button>
-                      <button type="button" class="btn btn-secondary">Secondary</button>
-                      <button type="button" class="btn btn-outline-danger">Outline</button>
-                      <button type="button" class="btn btn-ghost-info">Ghost</button>
+        <div class="navbar-nav flex-row order-md-last ms-auto">
+            <div class="nav-item dropdown">
+                <a href="#" class="nav-link d-flex lh-1 text-reset" data-bs-toggle="dropdown"
+                   aria-label="Open user menu">
+                    <span class="avatar avatar-sm"
+                          style="background-image: url(/static/avatars/{{ .userId }}.jpg)"></span>
+                    <div class="d-none d-xl-block ps-2">
+                        <div>{{ .userName }}</div>
+                        <div class="mt-1 small text-secondary">{{ .userRole }}</div>
                     </div>
-                  </div>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                    <a href="#" class="dropdown-item">Conta</a>
+                    <a href="#" class="dropdown-item">Mensagens</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" class="dropdown-item">Sair</a>
                 </div>
-              </div>
-              <div class="col-md-6">
-                <div class="card">
-                  <div class="card-body">
-                    <h3 class="card-title">Form</h3>
-                    <div class="mb-3">
-                      <label class="form-label" for="starter-name">Your name</label>
-                      <input type="text" class="form-control" id="starter-name" placeholder="Jane Doe" />
-                    </div>
-                    <label class="form-check form-switch">
-                      <input class="form-check-input" type="checkbox" checked />
-                      <span class="form-check-label">Enable notifications</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-              <div class="col-12">
-                <div class="card">
-                  <div class="card-body">
-                    <h3 class="card-title">Next steps</h3>
-                    <p class="text-secondary">
-                      Edit <code>index.html</code> and use any component from the
-                      <a href="https://preview.tabler.io" target="_blank" rel="noopener">Tabler preview</a>. The full
-                      documentation is available at
-                      <a href="https://docs.tabler.io" target="_blank" rel="noopener">docs.tabler.io</a>.
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script>
-    <script src="/static/main.js"></script>
-  </body>
+</header>
+<body>
+<div class="page">
+    <div class="page-wrapper">
+        <div class="page-header d-print-none">
+            <div class="container-xl">
+                <div class="row g-2 align-items-center">
+                    <div class="col">
+                        <h2 class="page-title">Tamanduás</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <main class="page-body">
+            <div class="container-xl">
+                <div class="row row-deck row-cards">
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card">
+                            <div class="list-group" id="tamanduas-list">
+                                <div class="list-group-item"><a href="#graziello">Graziello</a></div>
+                                <div class="list-group-item"><a href="#ravi">Ravi</a></div>
+                                <div class="list-group-item"><a href="#miguelito">Miguelito</a></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-9">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row row-deck">
+                                    <h2>Graziello</h2>
+                                    <div class="col-md-4">
+                                        <div class="card-body">
+                                            <h3 class="card-title">Peso</h3>
+                                            <p class="text-secondary"><span id="animal-peso"></span> kg.</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card-body">
+                                            <h3 class="card-title">Ultima Verificação</h3>
+                                            <p class="text-secondary" id="animal-ultima-verificacao"></p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card-body">
+                                            <h3 class="card-title">Data do Equipamento</h3>
+                                            <p class="text-secondary" id="animal-data-equipamento"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="row row-deck">
+                                    <h2>Localização</h2>
+                                    <div class="col-md-12">
+                                        <div id="map" class="ratio ratio-16x9"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/js/tabler.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/static/main.js"></script>
+</body>
 </html>

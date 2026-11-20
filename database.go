@@ -1,20 +1,20 @@
 package main
 
 type User struct {
-	ID int
-	Name string
-	Email string
-	Password string
+	ID       int    `json:"id"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type Animals struct {
-	ID int
-	Name string
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 type AnimalsCoordinates struct {
-	AnimalID int
-	Latitude float64
-	Longitude float64
-	RegisteredAt string
+	AnimalID     int     `json:"animal_id"`
+	Latitude     float64 `json:"latitude"`
+	Longitude    float64 `json:"longitude"`
+	RegisteredAt string  `json:"registered_at"`
 }

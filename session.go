@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"crypto/rand"
-	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"html/template"
+	"icas/pkg/api"
+	"icas/pkg/database"
+	"icas/pkg/helpers"
 	"net/http"
 	"sync"
 	"time"
@@ -22,11 +23,11 @@ const sessionContextKey contextKey = "sessionKey"
 
 type sessionStore struct {
 	mu       sync.RWMutex
-	sessions map[string]User // sessionID -> email
+	sessions map[string]api.User // sessionID -> email
 }
 
 var store = &sessionStore{
-	sessions: make(map[string]User),
+	sessions: make(map[string]api.User),
 }
 
 func generateSessionID() (string, error) {
@@ -50,72 +51,35 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		t, err := template.ParseFiles("html/login.html")
 		if err != nil {
-			printError(w, err)
+			helpers.PrintError(w, err)
 			return
 		}
 		t.Execute(w, p)
 		return
 	}
 	if r.Method == "POST" {
-		var requestUser User
 		defer r.Body.Close()
 		decoder := json.NewDecoder(r.Body)
+		var requestUser api.User
 		if err := decoder.Decode(&requestUser); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			helpers.PrintError(w, err)
+			return
 		}
-		db, err := sql.Open("sqlite", "file:icas.db")
+		user, err := database.UserLogin(requestUser.Email, requestUser.Password)
 		if err != nil {
-			fmt.Print(err)
-		}
-		defer db.Close()
-
-		rows, err := db.Query("SELECT id, name, email, password, role FROM users WHERE email = ?", requestUser.Email)
-		if err != nil {
-			fmt.Print(err)
-		}
-		defer rows.Close()
-
-		found := false
-		var u User
-		for rows.Next() {
-			if err := rows.Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.Role); err != nil {
-				fmt.Print(err)
-			}
-			if verifyPassword(requestUser.Password, u.Password) {
-				found = true
-			}
-		}
-		if err := rows.Err(); err != nil {
-			fmt.Print(err)
-		}
-		if found {
+			http.Error(w, "Usuário ou senha inválidos", http.StatusNotFound)
+		} else {
 			sessionID, err := generateSessionID()
 			if err != nil {
-				fmt.Print(err)
+				helpers.PrintError(w, err)
+				return
 			}
 
 			store.mu.Lock()
-			store.sessions[sessionID] = User{
-				u.ID,
-				u.Name,
-				u.Email,
-				"",
-				u.Role,
-			}
+			store.sessions[sessionID] = user
 			store.mu.Unlock()
-			http.SetCookie(w, &http.Cookie{
-				Name:     "session_id",
-				Value:    sessionID,
-				Path:     "/",
-				HttpOnly: true,
-				Secure:   true,
-				SameSite: http.SameSiteLaxMode,
-				Expires:  time.Now().Add(24 * time.Hour),
-			})
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, "found")
-		} else {
-			http.Error(w, "Usuário ou senha inválidos", http.StatusNotFound)
+			setCookie(w, sessionID)
+			http.Error(w, "Usuário encontrado", http.StatusOK)
 		}
 		return
 	}
@@ -150,4 +114,16 @@ func getActiveSession(r *http.Request) (context.Context, error) {
 
 	ctx := context.WithValue(r.Context(), sessionContextKey, sid)
 	return ctx, nil
+}
+
+func setCookie(w http.ResponseWriter, sessionID string) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    sessionID,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+		Expires:  time.Now().Add(24 * time.Hour),
+	})
 }

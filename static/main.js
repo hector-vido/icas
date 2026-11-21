@@ -60,6 +60,7 @@ if (document.getElementById("map")) {
             req.addEventListener("load", function () {
                 if (req.status >= 200 && req.status < 300) {
                     let animal = JSON.parse(req.responseText);
+                    document.getElementById("animal-nome").textContent = animal.name;
                     document.getElementById("animal-peso").textContent = animal.weight;
                     document.getElementById("animal-ultima-verificacao").textContent = animal.lastCheck;
                     document.getElementById("animal-data-equipamento").textContent = animal.equipmentDate;

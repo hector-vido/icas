@@ -2,6 +2,7 @@ package main
 
 import (
 	"cmp"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -11,6 +12,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -21,9 +23,10 @@ func main() {
 	slog.SetDefault(logger)
 
 	http.HandleFunc("/", authMiddleware(homeHandler))
-	http.HandleFunc("/login", loginHandler)
+	http.HandleFunc("/login/", loginHandler)
 	http.HandleFunc("/animal/", authMiddleware(animalHandler))
 	http.HandleFunc("/gps/", authMiddleware(gpsHandler))
+	http.HandleFunc("/downloadCoords/", authMiddleware(downloadCoordsHandler))
 
 	fs := http.FileServer(http.Dir("static/"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
@@ -79,6 +82,31 @@ func gpsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := database.AddCoordinate(animalName, coordinate); err != nil {
+		helpers.PrintError(w, err)
+	}
+}
+
+func downloadCoordsHandler(w http.ResponseWriter, r *http.Request) {
+	animalName := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/downloadCoords/"), "/")
+	coordinates, err := database.GetCoordinates(animalName, 10)
+	if err != nil {
+		helpers.PrintError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="coordinates-%s.csv"`, strings.ToLower(animalName)))
+	writer := csv.NewWriter(w)
+	if err = writer.Write([]string{"latitude", "longitude", "date"}); err != nil {
+		helpers.PrintError(w, err)
+	}
+	for _, c := range coordinates {
+		line := []string{strconv.FormatFloat(c.Lat, 'f', 5, 64), strconv.FormatFloat(c.Lng, 'f', 5, 64), c.RegisteredAt}
+		if err = writer.Write(line); err != nil {
+			helpers.PrintError(w, err)
+		}
+	}
+	writer.Flush()
+	if err = writer.Error(); err != nil {
 		helpers.PrintError(w, err)
 	}
 }

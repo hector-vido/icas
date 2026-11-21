@@ -25,6 +25,7 @@ type AnimalCoordinate struct {
 }
 
 type Coordinate struct {
-	Lat float64 `json:"lat"`
-	Lng float64 `json:"lng"`
+	Lat          float64 `json:"lat"`
+	Lng          float64 `json:"lng"`
+	RegisteredAt string  `json:"registered_at"`
 }

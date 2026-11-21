@@ -46,7 +46,7 @@ if (document.getElementById("map")) {
         markerGroup.clearLayers();
         locations.forEach((loc, index) => {
             L.marker([loc.lat, loc.lng])
-                .bindPopup(`Ponto ${index + 1}<br>(${loc.lat}, ${loc.lng})`)
+                .bindPopup(`Ponto ${index + 1}<br>${loc.registered_at}<br>(${loc.lat}, ${loc.lng})`)
                 .addTo(markerGroup);
         });
     };
@@ -61,9 +61,11 @@ if (document.getElementById("map")) {
                 if (req.status >= 200 && req.status < 300) {
                     let animal = JSON.parse(req.responseText);
                     document.getElementById("animal-nome").textContent = animal.name;
+                    document.getElementById("link-coordenadas").href = `downloadCoords/${animal.name}`;
                     document.getElementById("animal-peso").textContent = animal.weight;
                     document.getElementById("animal-ultima-verificacao").textContent = animal.lastCheck;
                     document.getElementById("animal-data-equipamento").textContent = animal.equipmentDate;
+                    document.getElementById("link-coordenadas").style.display = 'inline';
                     updateMarkers(animal.coordinates);
                     if (animal.coordinates.length > 0) {
                         map.setView([animal.coordinates[0].lat, animal.coordinates[0].lng], 15);

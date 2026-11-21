@@ -22,7 +22,7 @@ func GetAnimal(animalName string) (api.Animal, error) {
 		return api.Animal{}, err
 	}
 
-	rows, err := db.Query("SELECT latitude, longitude FROM animals_coordinates WHERE animal_id = ?", a.ID)
+	rows, err := db.Query("SELECT latitude, longitude, registered_at FROM animals_coordinates WHERE animal_id = ?", a.ID)
 	if err != nil {
 		return api.Animal{}, err
 	}
@@ -30,7 +30,7 @@ func GetAnimal(animalName string) (api.Animal, error) {
 
 	for rows.Next() {
 		var c api.Coordinate
-		if err := rows.Scan(&c.Lat, &c.Lng); err != nil {
+		if err := rows.Scan(&c.Lat, &c.Lng, &c.RegisteredAt); err != nil {
 			return api.Animal{}, err
 		}
 		a.Coordinates = append(a.Coordinates, c)
